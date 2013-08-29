@@ -110,6 +110,7 @@ public class DeploymentConfiguration implements WinkConfiguration {
     private ResponseHandlersChain     responseHandlersChain;
     private ResponseHandlersChain     errorHandlersChain;
 
+    private List<RequestHandler>      requestPreHandlers;
     private List<RequestHandler>      requestUserHandlers;
     private List<ResponseHandler>     responseUserHandlers;
     private List<ResponseHandler>     errorUserHandlers;
@@ -493,6 +494,10 @@ public class DeploymentConfiguration implements WinkConfiguration {
     }
 
     private void initHandlersChain() {
+        if (requestPreHandlers == null) {
+            requestPreHandlers = initRequestPreHandlers();
+        }
+        
         if (requestHandlersChain == null) {
             requestHandlersChain = initRequestHandlersChain();
         }
@@ -535,6 +540,12 @@ public class DeploymentConfiguration implements WinkConfiguration {
         }
 
         handlersChain.addHandler(createHandler(HeadMethodHandler.class));
+        if (requestPreHandlers != null) {
+            for (RequestHandler h : requestPreHandlers) {
+                h.init(properties);
+                handlersChain.addHandler(h);
+            }
+        }
         handlersChain.addHandler(createHandler(FindRootResourceHandler.class));
         handlersChain.addHandler(createHandler(FindResourceMethodHandler.class));
         handlersChain.addHandler(createHandler(CreateInvocationParametersHandler.class));
@@ -557,6 +568,10 @@ public class DeploymentConfiguration implements WinkConfiguration {
      * @see RequestHandler
      */
     protected List<RequestHandler> initRequestUserHandlers() {
+        return Collections.emptyList();
+    }
+    
+    protected List<RequestHandler> initRequestPreHandlers() {
         return Collections.emptyList();
     }
 

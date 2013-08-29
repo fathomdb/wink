@@ -92,6 +92,8 @@ public class ProvidersRegistry {
     private final ApplicationValidator                                  applicationValidator;
     private final LifecycleManagersRegistry                             factoryFactoryRegistry;
 
+    private final List<ObjectFactory<?>> all = new ArrayList<ObjectFactory<?>>();
+
     public ProvidersRegistry(LifecycleManagersRegistry factoryRegistry,
                              ApplicationValidator applicationValidator) {
         this.factoryFactoryRegistry = factoryRegistry;
@@ -165,6 +167,7 @@ public class ProvidersRegistry {
                 logger.warn(Messages.getMessage("classIsUnknownProvider", cls)); //$NON-NLS-1$
             }
         }
+        all.add(objectFactory);
         return retValue;
 
     }
@@ -197,6 +200,10 @@ public class ProvidersRegistry {
         }
 
         return recordList;
+    }
+
+    public List<ObjectFactory<?>> getAllProviders() {
+        return all;
     }
 
     public List<ProviderRecord<?>> getContextResolverRecords() {

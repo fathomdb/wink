@@ -31,9 +31,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status.Family;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Variant;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.Response.StatusType;
 
 import org.apache.wink.common.RuntimeContext;
 import org.apache.wink.common.internal.runtime.RuntimeContextTLS;
@@ -267,6 +270,49 @@ public class ResponseImpl extends Response {
             }
         }
 
+    }
+
+    
+    // TODO: Move to Family enum
+    public static Family familyOf(int status) {
+        switch (status / 100) {
+        case 1:
+            return Family.INFORMATIONAL;
+        case 2:
+            return Family.SUCCESSFUL;
+        case 3:
+            return Family.REDIRECTION;
+        case 4:
+            return Family.CLIENT_ERROR;
+        case 5:
+            return Family.SERVER_ERROR;
+        default:
+            return Family.OTHER;
+        }
+    }
+    
+    public StatusType getStatusInfo() {
+        final int statusCode = getStatus();
+        StatusType statusType = Status.fromStatusCode(statusCode);
+        if (statusType == null) {
+            statusType = new StatusType() {
+                @Override
+                public Family getFamily() {
+                    return familyOf(statusCode);
+                }
+
+                @Override
+                public String getReasonPhrase() {
+                    return "Unknown status";
+                }
+
+                @Override
+                public int getStatusCode() {
+                    return statusCode;
+                }
+            };
+        }
+        return statusType;
     }
 
 }
