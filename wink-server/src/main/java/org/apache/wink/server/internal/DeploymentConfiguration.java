@@ -520,10 +520,11 @@ public class DeploymentConfiguration implements WinkConfiguration {
      */
     @SuppressWarnings("unchecked")
     protected RequestHandlersChain initRequestHandlersChain() {
-        RequestHandlersChain handlersChain = new RequestHandlersChain();
-        handlersChain.addHandler(createHandler(Requests.class));
-        handlersChain.addHandler(createHandler(ResourceInvocation.class));
-        handlersChain.addHandler(createHandler(SearchResultHandler.class));
+        List<RequestHandler> handlers = new ArrayList<RequestHandler>();
+        
+        handlers.add(createHandler(Requests.class));
+        handlers.add(createHandler(ResourceInvocation.class));
+        handlers.add(createHandler(SearchResultHandler.class));
         String optionsHandler =
             properties.getProperty("org.apache.wink.server.options.handler",
                                    OptionsMethodHandler.class.getName());
@@ -532,31 +533,33 @@ public class DeploymentConfiguration implements WinkConfiguration {
         }
         logger.trace("org.apache.wink.server.options.handler value is {}", optionsHandler);
         try {
-            handlersChain.addHandler(createHandler((Class<? extends RequestHandler>)Class
+            handlers.add(createHandler((Class<? extends RequestHandler>)Class
                 .forName(optionsHandler)));
         } catch (Exception e) {
             logger.trace("Could not load handlers class so adding default");
-            handlersChain.addHandler(createHandler(OptionsMethodHandler.class));
+            handlers.add(createHandler(OptionsMethodHandler.class));
         }
 
-        handlersChain.addHandler(createHandler(HeadMethodHandler.class));
+        handlers.add(createHandler(HeadMethodHandler.class));
         if (requestPreHandlers != null) {
             for (RequestHandler h : requestPreHandlers) {
                 h.init(properties);
-                handlersChain.addHandler(h);
+                handlers.add(h);
             }
         }
-        handlersChain.addHandler(createHandler(FindRootResourceHandler.class));
-        handlersChain.addHandler(createHandler(FindResourceMethodHandler.class));
-        handlersChain.addHandler(createHandler(CreateInvocationParametersHandler.class));
+        handlers.add(createHandler(FindRootResourceHandler.class));
+        handlers.add(createHandler(FindResourceMethodHandler.class));
+        handlers.add(createHandler(CreateInvocationParametersHandler.class));
         if (requestUserHandlers != null) {
             for (RequestHandler h : requestUserHandlers) {
                 h.init(properties);
-                handlersChain.addHandler(h);
+                handlers.add(h);
             }
         }
-        handlersChain.addHandler(createHandler(InvokeMethodHandler.class));
-        logger.trace("Request handlers chain is: {}", handlersChain); //$NON-NLS-1$
+        handlers.add(createHandler(InvokeMethodHandler.class));
+        logger.trace("Request handlers chain is: {}", handlers); //$NON-NLS-1$
+        
+        RequestHandlersChain handlersChain = RequestHandlersChain.build(handlers);
         return handlersChain;
     }
 
@@ -608,19 +611,22 @@ public class DeploymentConfiguration implements WinkConfiguration {
      * but <tt>initResponseUserHandlers</tt> instead.
      */
     protected ResponseHandlersChain initResponseHandlersChain() {
-        ResponseHandlersChain handlersChain = new ResponseHandlersChain();
-        handlersChain.addHandler(createHandler(Responses.class));
-        handlersChain.addHandler(createHandler(PopulateResponseStatusHandler.class));
-        handlersChain.addHandler(createHandler(PopulateResponseMediaTypeHandler.class));
+        List<ResponseHandler> handlers = new ArrayList<ResponseHandler>();
+        
+        handlers.add(createHandler(Responses.class));
+        handlers.add(createHandler(PopulateResponseStatusHandler.class));
+        handlers.add(createHandler(PopulateResponseMediaTypeHandler.class));
         if (responseUserHandlers != null) {
             for (ResponseHandler h : responseUserHandlers) {
                 h.init(properties);
-                handlersChain.addHandler(h);
+                handlers.add(h);
             }
         }
-        handlersChain.addHandler(createHandler(FlushResultHandler.class));
-        handlersChain.addHandler(createHandler(HeadMethodHandler.class));
-        logger.trace("Response handlers chain is: {}", handlersChain); //$NON-NLS-1$
+        handlers.add(createHandler(FlushResultHandler.class));
+        handlers.add(createHandler(HeadMethodHandler.class));
+        logger.trace("Response handlers chain is: {}", handlers); //$NON-NLS-1$
+
+        ResponseHandlersChain handlersChain = ResponseHandlersChain.build(handlers);
         return handlersChain;
     }
 
@@ -630,26 +636,28 @@ public class DeploymentConfiguration implements WinkConfiguration {
      * <tt>initErrorUserHandlers</tt> instead.
      */
     protected ResponseHandlersChain initErrorHandlersChain() {
-        ResponseHandlersChain handlersChain = new ResponseHandlersChain();
-
+        List<ResponseHandler> handlers = new ArrayList<ResponseHandler>();
+        
         Responses responsesHandler = createHandler(Responses.class);
         responsesHandler.setIsErrorFlow(true);
-        handlersChain.addHandler(responsesHandler);
+        handlers.add(responsesHandler);
 
-        handlersChain.addHandler(createHandler(PopulateErrorResponseHandler.class));
-        handlersChain.addHandler(createHandler(PopulateResponseStatusHandler.class));
+        handlers.add(createHandler(PopulateErrorResponseHandler.class));
+        handlers.add(createHandler(PopulateResponseStatusHandler.class));
         PopulateResponseMediaTypeHandler populateMediaTypeHandler =
             createHandler(PopulateResponseMediaTypeHandler.class);
         populateMediaTypeHandler.setErrorFlow(true);
-        handlersChain.addHandler(populateMediaTypeHandler);
+        handlers.add(populateMediaTypeHandler);
         if (errorUserHandlers != null) {
             for (ResponseHandler h : errorUserHandlers) {
                 h.init(properties);
-                handlersChain.addHandler(h);
+                handlers.add(h);
             }
         }
-        handlersChain.addHandler(createHandler(FlushResultHandler.class));
-        logger.trace("Error handlers chain is: {}", handlersChain); //$NON-NLS-1$
+        handlers.add(createHandler(FlushResultHandler.class));
+        logger.trace("Error handlers chain is: {}", handlers); //$NON-NLS-1$
+        
+        ResponseHandlersChain handlersChain = ResponseHandlersChain.build(handlers);
         return handlersChain;
     }
 

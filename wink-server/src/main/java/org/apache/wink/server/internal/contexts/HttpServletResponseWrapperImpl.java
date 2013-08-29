@@ -21,6 +21,7 @@ package org.apache.wink.server.internal.contexts;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collection;
 import java.util.Locale;
 
 import javax.servlet.ServletOutputStream;
@@ -355,6 +356,22 @@ public class HttpServletResponseWrapperImpl extends HttpServletResponseWrapper {
         }
 
         public void addCookie(Cookie arg0) {
+            throw new IllegalStateException();
+        }
+
+        public String getHeader(String name) {
+            throw new IllegalStateException();
+        }
+
+        public Collection<String> getHeaderNames() {
+            throw new IllegalStateException();
+        }
+
+        public Collection<String> getHeaders(String headerName) {
+            throw new IllegalStateException();
+        }
+
+        public int getStatus() {
             throw new IllegalStateException();
         }
 

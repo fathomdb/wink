@@ -34,6 +34,7 @@ import javax.ws.rs.HeaderParam;
 import javax.ws.rs.MatrixParam;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Context;
 
 import org.apache.wink.common.RuntimeContext;
@@ -85,6 +86,7 @@ public class InjectableFactory {
         CookieParam cookie = null;
         FormParam form = null;
         Context context = null;
+        Suspended suspended = null;
 
         Injectable injectable = null;
         int annotationsCounter = 0;
@@ -114,6 +116,9 @@ public class InjectableFactory {
                 encoded = true;
             } else if (annotations[i].annotationType().equals(DefaultValue.class)) {
                 defaultValue = ((DefaultValue)annotations[i]).value();
+            } else if (annotations[i].annotationType().equals(Suspended.class)) {
+                suspended = (Suspended)annotations[i];
+                ++annotationsCounter;
             }
         }
 
@@ -140,6 +145,8 @@ public class InjectableFactory {
             injectable = createFormParam(form.value(), classType, genericType, annotations, member);
         } else if (context != null) {
             injectable = createContextParam(classType, annotations, member);
+        } else if (suspended != null) {
+            injectable = createSuspendedParam(classType, genericType, annotations, member);
         } else {
             injectable = createEntityParam(classType, genericType, annotations, member);
         }
@@ -253,6 +260,14 @@ public class InjectableFactory {
                                         Annotation[] annotations,
                                         Member member) {
         return new NullInjectable(Injectable.ParamType.ENTITY, classType, genericType, annotations,
+                                  member);
+    }
+
+    public Injectable createSuspendedParam(Class<?> classType,
+                                           Type genericType,
+                                           Annotation[] annotations,
+                                           Member member) {
+        return new NullInjectable(Injectable.ParamType.SUSPENDED, classType, genericType, annotations,
                                   member);
     }
 

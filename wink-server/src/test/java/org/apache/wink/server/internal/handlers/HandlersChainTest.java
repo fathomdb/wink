@@ -20,6 +20,8 @@
 
 package org.apache.wink.server.internal.handlers;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import junit.framework.TestCase;
@@ -157,11 +159,12 @@ public class HandlersChainTest extends TestCase {
     }
 
     public void testRequestChain() throws Throwable {
-        RequestHandlersChain chain = new RequestHandlersChain();
-        chain.addHandler(new Handler1());
-        chain.addHandler(new Handler2());
-        chain.addHandler(new Handler3());
-
+        List<RequestHandler> handlers = new ArrayList<RequestHandler>();
+        handlers.add(new Handler1());
+        handlers.add(new Handler2());
+        handlers.add(new Handler3());
+        RequestHandlersChain chain = RequestHandlersChain.build(handlers);
+        
         chain.run(null);
         assertEquals(1, Handler1.requests);
         assertEquals(1, Handler2.requests);
@@ -184,10 +187,11 @@ public class HandlersChainTest extends TestCase {
     }
 
     public void testResponseChain() throws Throwable {
-        ResponseHandlersChain chain = new ResponseHandlersChain();
-        chain.addHandler(new Handler1());
-        chain.addHandler(new Handler2());
-        chain.addHandler(new Handler3());
+        List<ResponseHandler> handlers = new ArrayList<ResponseHandler>();
+        handlers.add(new Handler1());
+        handlers.add(new Handler2());
+        handlers.add(new Handler3());
+        ResponseHandlersChain chain = ResponseHandlersChain.build(handlers);
 
         chain.run(null);
         assertEquals(1, Handler1.responses);
@@ -211,11 +215,12 @@ public class HandlersChainTest extends TestCase {
     }
 
     public void testHandlerThrowingException() throws Throwable {
-        RequestHandlersChain chain = new RequestHandlersChain();
-        chain.addHandler(new HandlerException1());
-        chain.addHandler(new HandlerException2());
-        chain.addHandler(new HandlerException3());
-
+        List<RequestHandler> handlers = new ArrayList<RequestHandler>();
+        handlers.add(new HandlerException1());
+        handlers.add(new HandlerException2());
+        handlers.add(new HandlerException3());
+        RequestHandlersChain chain = RequestHandlersChain.build(handlers);
+        
         chain.run(null);
         assertEquals(2, HandlerException2.requests);
         assertEquals(3, HandlerException3.requests);

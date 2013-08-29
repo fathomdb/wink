@@ -195,6 +195,9 @@ public class WADLGenerator {
                             case CONTEXT:
                                 /* do nothing */
                                 break;
+                            case SUSPENDED:
+                                /* do nothing */
+                                break;
                         }
                     }
                 }
@@ -529,6 +532,9 @@ public class WADLGenerator {
                     case CONTEXT:
                         /* do nothing */
                         break;
+                    case SUSPENDED:
+                        /* do nothing */
+                        break;
                 }
             }
             if (!hasValidParams) {
@@ -601,6 +607,8 @@ public class WADLGenerator {
             case COOKIE:
                 break;
             case ENTITY:
+                break;
+            case SUSPENDED:
                 break;
         }
 
