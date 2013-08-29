@@ -37,7 +37,11 @@ public class WinkAsyncResponse implements AsyncResponse {
             } catch (Throwable e) {
                 log.error("Unhandled error while sending async response", e);
             }
-            asyncContext.complete();
+            try {
+                asyncContext.complete();
+            } catch (Throwable e) {
+                log.error("Error while completing async response", e);
+            }
         } finally {
             RuntimeContextTLS.setRuntimeContext(null);
         }
