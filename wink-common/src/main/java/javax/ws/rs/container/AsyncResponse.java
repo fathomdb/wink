@@ -19,8 +19,15 @@
  *******************************************************************************/
 package javax.ws.rs.container;
 
+import java.util.concurrent.TimeUnit;
+
 // TODO: Fill this interface out with the other methods
 // Better yet, pull in a proper jax-rs API
 public interface AsyncResponse {
     public boolean resume(Object response);
+    
+    public void setTimeoutHandler(TimeoutHandler timeoutHandler);
+    
+    public boolean setTimeout(long duration, TimeUnit timeUnit);
+
 }

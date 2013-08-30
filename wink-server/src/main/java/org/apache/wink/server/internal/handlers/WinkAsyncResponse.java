@@ -19,10 +19,16 @@
  *******************************************************************************/
 package org.apache.wink.server.internal.handlers;
 
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
 import javax.servlet.AsyncContext;
+import javax.servlet.AsyncEvent;
+import javax.servlet.AsyncListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.container.TimeoutHandler;
 
 import org.apache.wink.common.internal.runtime.RuntimeContextTLS;
 import org.slf4j.Logger;
@@ -36,12 +42,38 @@ public class WinkAsyncResponse implements AsyncResponse {
     final HttpServletRequest httpServletRequest;
     final ServerMessageContext runtimeContext;
 
+    private TimeoutHandler timeoutHandler;
+    private long timeout = -1;
+
     public WinkAsyncResponse(ServerMessageContext runtimeContext, AsyncContext asyncContext,
             HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
         this.runtimeContext = runtimeContext;
         this.asyncContext = asyncContext;
         this.httpServletRequest = httpServletRequest;
         this.httpServletResponse = httpServletResponse;
+
+        asyncContext.addListener(new AsyncListener() {
+            @Override
+            public void onTimeout(AsyncEvent event) throws IOException {
+                synchronized (WinkAsyncResponse.this) {
+                    if (timeoutHandler != null) {
+                        timeoutHandler.handleTimeout(WinkAsyncResponse.this);
+                    }
+                }
+            }
+
+            @Override
+            public void onStartAsync(AsyncEvent event) throws IOException {
+            }
+
+            @Override
+            public void onError(AsyncEvent event) throws IOException {
+            }
+
+            @Override
+            public void onComplete(AsyncEvent event) throws IOException {
+            }
+        });
     }
 
     @Override
@@ -65,6 +97,18 @@ public class WinkAsyncResponse implements AsyncResponse {
             RuntimeContextTLS.setRuntimeContext(null);
         }
 
+        return true;
+    }
+
+    @Override
+    public void setTimeoutHandler(TimeoutHandler timeoutHandler) {
+        this.timeoutHandler = timeoutHandler;
+    }
+
+    @Override
+    public boolean setTimeout(long duration, TimeUnit timeUnit) {
+        this.timeout = timeUnit.convert(duration, TimeUnit.MILLISECONDS);
+        asyncContext.setTimeout(this.timeout);
         return true;
     }
 
