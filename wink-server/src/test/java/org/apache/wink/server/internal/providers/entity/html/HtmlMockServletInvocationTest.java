@@ -59,10 +59,6 @@ public abstract class HtmlMockServletInvocationTest extends MockServletInvocatio
                 return null; // prevent Spring to resolve the file on the
                 // filesystem which fails
             }
-
-            public boolean isAsyncStarted() {
-                return false;
-            }
         };
         mockRequest.setMethod(method);
         mockRequest.setRequestURI(requestURI);

@@ -110,10 +110,6 @@ public class OptionsMethodTest extends MockServletInvocationTest {
                 return null; // prevent Spring to resolve the file on the file
                              // system which fails
             }
-
-            public boolean isAsyncStarted() {
-                return false;
-            }
         };
         request.setMethod("OPTIONS");
         request.setRequestURI(path);

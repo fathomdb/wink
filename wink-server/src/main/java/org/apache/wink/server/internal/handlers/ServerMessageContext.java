@@ -271,7 +271,10 @@ public class ServerMessageContext extends AbstractRuntimeContext implements Mess
         HttpServletResponse httpServletResponse = getAttribute(HttpServletResponse.class);
         
         AsyncContext asyncContext = httpServletRequest.startAsync();
-        return new WinkAsyncResponse(this, asyncContext, httpServletRequest, httpServletResponse);
+        
+        AsyncResponse ar = new WinkAsyncResponse(this, asyncContext, httpServletRequest, httpServletResponse);
+        setAttribute(AsyncResponse.class, ar);
+        return ar;
     }
 
     public void processResponse() throws Throwable {
@@ -308,7 +311,7 @@ public class ServerMessageContext extends AbstractRuntimeContext implements Mess
     }
 
     public boolean isAsyncStarted() {
-        HttpServletRequest httpServletRequest = getAttribute(HttpServletRequest.class);
-        return httpServletRequest.isAsyncStarted();
+        AsyncResponse ar = getAttribute(AsyncResponse.class);
+        return ar != null;
     }
 }
