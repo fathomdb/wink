@@ -60,6 +60,9 @@ public abstract class HtmlMockServletInvocationTest extends MockServletInvocatio
                 // filesystem which fails
             }
 
+            public boolean isAsyncStarted() {
+                return false;
+            }
         };
         mockRequest.setMethod(method);
         mockRequest.setRequestURI(requestURI);

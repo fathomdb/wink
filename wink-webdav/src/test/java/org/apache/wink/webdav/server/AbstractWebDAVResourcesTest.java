@@ -82,6 +82,10 @@ public abstract class AbstractWebDAVResourcesTest extends MockServletInvocationT
                 return null; // prevent Spring to resolve the file on the file
                              // system which fails
             }
+            
+            public boolean isAsyncStarted() {
+                return false;
+            }
         };
         // headers
         mockRequest.setMethod(WebDAVMethod.PROPFIND.name());
