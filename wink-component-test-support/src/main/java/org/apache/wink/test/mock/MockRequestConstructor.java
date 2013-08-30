@@ -66,6 +66,10 @@ public final class MockRequestConstructor {
                 return null; // prevent Spring to resolve the file on the
                              // filesystem which fails
             }
+            
+            public boolean isAsyncStarted() {
+                return false;
+            }
 
         };
         mockRequest.setMethod(method);
