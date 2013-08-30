@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.TimeoutHandler;
+import javax.ws.rs.core.Response;
 
 import org.apache.wink.common.internal.runtime.RuntimeContextTLS;
 import org.slf4j.Logger;
@@ -45,6 +46,8 @@ public class WinkAsyncResponse implements AsyncResponse {
     private TimeoutHandler timeoutHandler;
     private long timeout = -1;
 
+    boolean done;
+
     public WinkAsyncResponse(ServerMessageContext runtimeContext, AsyncContext asyncContext,
             HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
         this.runtimeContext = runtimeContext;
@@ -55,11 +58,7 @@ public class WinkAsyncResponse implements AsyncResponse {
         asyncContext.addListener(new AsyncListener() {
             @Override
             public void onTimeout(AsyncEvent event) throws IOException {
-                synchronized (WinkAsyncResponse.this) {
-                    if (timeoutHandler != null) {
-                        timeoutHandler.handleTimeout(WinkAsyncResponse.this);
-                    }
-                }
+                handleTimeout(event);
             }
 
             @Override
@@ -76,6 +75,16 @@ public class WinkAsyncResponse implements AsyncResponse {
         });
     }
 
+    protected synchronized void handleTimeout(AsyncEvent event) {
+        if (timeoutHandler != null) {
+            timeoutHandler.handleTimeout(WinkAsyncResponse.this);
+        }
+
+        if (!done) {
+            sendResponse(Response.status(503).build());
+        }
+    }
+
     @Override
     public boolean resume(Throwable t) {
         return sendResponse(t);
@@ -86,7 +95,13 @@ public class WinkAsyncResponse implements AsyncResponse {
         return sendResponse(entity);
     }
 
-    private boolean sendResponse(Object entity) {
+    private synchronized boolean sendResponse(Object entity) {
+        if (done) {
+            throw new IllegalStateException();
+        }
+
+        done = true;
+
         assert RuntimeContextTLS.getRuntimeContext() == null;
 
         RuntimeContextTLS.setRuntimeContext(runtimeContext);
@@ -112,12 +127,12 @@ public class WinkAsyncResponse implements AsyncResponse {
     }
 
     @Override
-    public void setTimeoutHandler(TimeoutHandler timeoutHandler) {
+    public synchronized void setTimeoutHandler(TimeoutHandler timeoutHandler) {
         this.timeoutHandler = timeoutHandler;
     }
 
     @Override
-    public boolean setTimeout(long duration, TimeUnit timeUnit) {
+    public synchronized boolean setTimeout(long duration, TimeUnit timeUnit) {
         this.timeout = TimeUnit.MILLISECONDS.convert(duration, timeUnit);
         asyncContext.setTimeout(this.timeout);
         return true;
