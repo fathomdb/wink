@@ -109,7 +109,7 @@ public class WinkAsyncResponse implements AsyncResponse {
 
     @Override
     public boolean setTimeout(long duration, TimeUnit timeUnit) {
-        this.timeout = timeUnit.convert(duration, TimeUnit.MILLISECONDS);
+        this.timeout = TimeUnit.MILLISECONDS.convert(duration, timeUnit);
         asyncContext.setTimeout(this.timeout);
         return true;
     }
