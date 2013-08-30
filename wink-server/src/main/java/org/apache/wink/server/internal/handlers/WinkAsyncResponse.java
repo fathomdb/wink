@@ -36,7 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class WinkAsyncResponse implements AsyncResponse {
-    private static final Logger log = LoggerFactory.getLogger(WinkAsyncResponse.class);
+    private static final Logger logger = LoggerFactory.getLogger(WinkAsyncResponse.class);
 
     final AsyncContext asyncContext;
     final HttpServletResponse httpServletResponse;
@@ -111,13 +111,15 @@ public class WinkAsyncResponse implements AsyncResponse {
                 runtimeContext.processResponse();
             } catch (Throwable e) {
                 // TODO: i18n
-                log.error("Unhandled error while sending async response", e); //$NON-NLS-1$
+                String msg = "Unhandled error while sending async response";
+                logger.error(msg, e);
             }
             try {
                 asyncContext.complete();
             } catch (Throwable e) {
                 // TODO: i18n
-                log.error("Error while completing async response", e); //$NON-NLS-1$
+                String msg = "Error while completing async response";
+                logger.error(msg, e);
             }
         } finally {
             RuntimeContextTLS.setRuntimeContext(null);
