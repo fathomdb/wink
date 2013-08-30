@@ -269,9 +269,12 @@ public class ServerMessageContext extends AbstractRuntimeContext implements Mess
     public AsyncResponse suspend() {
         HttpServletRequest httpServletRequest = getAttribute(HttpServletRequest.class);
         HttpServletResponse httpServletResponse = getAttribute(HttpServletResponse.class);
+
+        assert httpServletRequest != null;
+        assert httpServletResponse != null;
         
         AsyncContext asyncContext = httpServletRequest.startAsync();
-        
+
         AsyncResponse ar = new WinkAsyncResponse(this, asyncContext, httpServletRequest, httpServletResponse);
         setAttribute(AsyncResponse.class, ar);
         return ar;
