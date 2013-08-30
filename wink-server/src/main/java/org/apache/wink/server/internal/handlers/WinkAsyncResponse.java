@@ -77,7 +77,16 @@ public class WinkAsyncResponse implements AsyncResponse {
     }
 
     @Override
+    public boolean resume(Throwable t) {
+        return sendResponse(t);
+    }
+
+    @Override
     public boolean resume(Object entity) {
+        return sendResponse(entity);
+    }
+
+    private boolean sendResponse(Object entity) {
         assert RuntimeContextTLS.getRuntimeContext() == null;
 
         RuntimeContextTLS.setRuntimeContext(runtimeContext);

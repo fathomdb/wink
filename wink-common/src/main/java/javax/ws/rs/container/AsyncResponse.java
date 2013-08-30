@@ -24,10 +24,18 @@ import java.util.concurrent.TimeUnit;
 // TODO: Fill this interface out with the other methods
 // Better yet, pull in a proper jax-rs API
 public interface AsyncResponse {
+    /**
+     * Resume with normal response
+     */
     public boolean resume(Object response);
-    
+
+    /**
+     * Resume with error response
+     */
+    public boolean resume(Throwable response);
+
     public void setTimeoutHandler(TimeoutHandler timeoutHandler);
-    
+
     public boolean setTimeout(long duration, TimeUnit timeUnit);
 
 }
