@@ -186,4 +186,7 @@ public class MockHttpServletRequestWrapper extends MockHttpServletRequest {
         return super.getParameterMap();
     }
 
+    public boolean isAsyncStarted() {
+        return false;
+    }
 }
