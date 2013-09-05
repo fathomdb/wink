@@ -97,6 +97,9 @@ public class HeadMethodHandler implements RequestHandler, ResponseHandler {
         }
 
         int getContentLengthValue() {
+            if (countingStream == null) {
+                return 0;
+            }
             return countingStream.getByteCount();
         }
 
