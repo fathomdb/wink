@@ -45,7 +45,7 @@ import org.apache.wink.common.internal.utils.GenericsUtils;
 public abstract class Injectable {
 
     public enum ParamType {
-        ENTITY, CONTEXT, PATH, QUERY, MATRIX, FORM, HEADER, COOKIE;
+        ENTITY, CONTEXT, PATH, QUERY, MATRIX, FORM, HEADER, COOKIE, SUSPENDED;
     }
 
     private final ParamType paramType;

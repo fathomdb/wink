@@ -25,6 +25,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -161,6 +162,17 @@ public class WADLGeneratorTest {
 
         List<MethodMetadata> methodMetadata = metadata.getResourceMethods();
         assertEquals(2, methodMetadata.size());
+
+        Collections.sort(methodMetadata, new Comparator<MethodMetadata>() {
+            @Override
+            public int compare(MethodMetadata o1, MethodMetadata o2) {
+                String s1 = o1.getHttpMethod();
+                String s2 = o2.getHttpMethod();
+
+                return s1.compareTo(s2);
+            }
+        });
+
         assertEquals(HttpMethod.GET, methodMetadata.get(0).getHttpMethod());
         assertEquals(HttpMethod.POST, methodMetadata.get(1).getHttpMethod());
     }

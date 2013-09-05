@@ -26,6 +26,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.net.SocketTimeoutException;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
@@ -41,10 +43,30 @@ import javax.ws.rs.ext.Provider;
 
 import org.apache.wink.common.internal.providers.entity.StringProvider;
 import org.apache.wink.common.utils.ProviderUtils;
+import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ConfigurationTest extends BaseTest {
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+
+        clearWinkProperties();
+    }
+
+    public void clearWinkProperties() {
+        Properties properties = System.getProperties();
+
+        Iterator<Object> it = properties.keySet().iterator();
+        while (it.hasNext()) {
+            String key = (String) it.next();
+            if (key.startsWith("wink.")) {
+                it.remove();
+            }
+        }
+    }
 
     public void testConfiguration() {
         ClientConfig conf = new ClientConfig();

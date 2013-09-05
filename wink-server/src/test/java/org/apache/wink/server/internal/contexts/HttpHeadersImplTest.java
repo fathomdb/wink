@@ -61,8 +61,10 @@ public class HttpHeadersImplTest extends TestCase {
                 will(returnValue(values.elements()));
             }
         });
+        DeploymentConfiguration configuration = new DeploymentConfiguration();
+        configuration.init();
         ServerMessageContext context =
-            new ServerMessageContext(requestMock, responseMock, new DeploymentConfiguration());
+            new ServerMessageContext(requestMock, responseMock, configuration);
         HttpHeadersImpl headers = new HttpHeadersImpl(context);
         List<MediaType> mediaTypes = headers.getAcceptableMediaTypes();
         assertEquals(1, mediaTypes.size());
@@ -89,8 +91,10 @@ public class HttpHeadersImplTest extends TestCase {
                 will(returnValue(values.elements()));
             }
         });
+        DeploymentConfiguration configuration = new DeploymentConfiguration();
+        configuration.init();
         ServerMessageContext context =
-            new ServerMessageContext(requestMock, responseMock, new DeploymentConfiguration());
+            new ServerMessageContext(requestMock, responseMock, configuration);
         HttpHeadersImpl headers = new HttpHeadersImpl(context);
         Map<String, Cookie> cookies = headers.getCookies();
         assertEquals(new Cookie("MyName", "MyValue", "/somewhere", null), cookies.get("MyName"));
@@ -115,8 +119,10 @@ public class HttpHeadersImplTest extends TestCase {
                 will(returnValue(values.elements()));
             }
         });
+        DeploymentConfiguration configuration = new DeploymentConfiguration();
+        configuration.init();
         ServerMessageContext context =
-            new ServerMessageContext(requestMock, responseMock, new DeploymentConfiguration());
+            new ServerMessageContext(requestMock, responseMock, configuration);
         HttpHeadersImpl headers = new HttpHeadersImpl(context);
         Map<String, Cookie> cookies = headers.getCookies();
         assertNull(cookies.get("MyName"));
@@ -143,8 +149,10 @@ public class HttpHeadersImplTest extends TestCase {
                 will(returnValue(values.elements()));
             }
         });
+        DeploymentConfiguration configuration = new DeploymentConfiguration();
+        configuration.init();
         ServerMessageContext context =
-            new ServerMessageContext(requestMock, responseMock, new DeploymentConfiguration());
+            new ServerMessageContext(requestMock, responseMock, configuration);
         HttpHeadersImpl headers = new HttpHeadersImpl(context);
         Map<String, Cookie> cookies = headers.getCookies();
         assertEquals(new Cookie("MyName", "MyValue", "/somewhere", null), cookies.get("MyName"));

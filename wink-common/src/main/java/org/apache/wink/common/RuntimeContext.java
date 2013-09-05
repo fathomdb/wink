@@ -20,6 +20,7 @@
 
 package org.apache.wink.common;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -31,7 +32,7 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Providers;
 
-public interface RuntimeContext {
+public interface RuntimeContext extends Closeable {
 
     /**
      * Get the {@link Providers} context

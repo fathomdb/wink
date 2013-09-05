@@ -36,6 +36,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -61,6 +62,7 @@ import org.apache.wink.common.internal.utils.StringUtils;
 import org.apache.wink.common.utils.ProviderUtils;
 import org.apache.wink.common.utils.ProviderUtils.PROVIDER_EXCEPTION_ORIGINATOR;
 import org.apache.wink.server.internal.handlers.SearchResult;
+import org.apache.wink.server.internal.handlers.ServerMessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -133,6 +135,11 @@ public class ServerInjectableFactory extends InjectableFactory {
                                        Annotation[] annotations,
                                        Member member) {
         return new QueryParamBinding(value, classType, genericType, annotations, member);
+    }
+
+    @Override
+    public Injectable createSuspendedParam(Class<?> classType, Type genericType, Annotation[] annotations, Member member) {
+        return new SuspendedParam(classType, genericType, annotations, member);
     }
 
     /**
@@ -212,6 +219,30 @@ public class ServerInjectableFactory extends InjectableFactory {
                 }
             }
             throw new WebApplicationException(Response.Status.UNSUPPORTED_MEDIA_TYPE);
+        }
+    }
+
+
+    /**
+     * Used for injecting a field or parameter of JAX-RS resource that has
+     * the @Suspended annotation
+     */
+    public static class SuspendedParam extends Injectable {
+
+        public SuspendedParam(Class<?> type, Type genericType, Annotation[] annotations, Member member) {
+            super(ParamType.SUSPENDED, type, genericType, annotations, member);
+        }
+
+        @SuppressWarnings("unchecked")
+        public Object getValue(RuntimeContext runtimeContext) throws IOException {
+            if (runtimeContext == null) {
+                throw new IllegalStateException();
+            }
+
+            ServerMessageContext context = (ServerMessageContext) runtimeContext;
+            
+            AsyncResponse asyncResponse = context.suspend();
+            return asyncResponse;
         }
     }
 

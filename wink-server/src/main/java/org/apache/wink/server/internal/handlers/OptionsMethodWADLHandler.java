@@ -19,13 +19,11 @@
 package org.apache.wink.server.internal.handlers;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 import org.apache.wink.common.http.HttpHeadersEx;
 import org.apache.wink.common.http.HttpMethodEx;
@@ -36,7 +34,6 @@ import org.apache.wink.common.model.wadl.WADLGenerator;
 import org.apache.wink.server.handlers.HandlersChain;
 import org.apache.wink.server.handlers.MessageContext;
 import org.apache.wink.server.handlers.RequestHandler;
-import org.apache.wink.server.internal.handlers.SearchResult.MethodType;
 import org.apache.wink.server.internal.registry.ResourceRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

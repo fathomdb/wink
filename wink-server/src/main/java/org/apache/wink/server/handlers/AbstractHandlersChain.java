@@ -26,60 +26,37 @@ import java.util.ListIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractHandlersChain<T extends Handler> implements HandlersChain, Cloneable {
+public abstract class AbstractHandlersChain<T extends Handler> implements HandlersChain {
 
     private static Logger logger = LoggerFactory.getLogger(AbstractHandlersChain.class);
     
-    private LinkedList<T>   list     = new LinkedList<T>();
-    private ListIterator<T> iterator = null;
+    final T handler;
+    protected final HandlersChain tail;
 
-    public AbstractHandlersChain() {
-        list = new LinkedList<T>();
-        iterator = null;
-    }
-
-    public void addHandler(T handler) {
-        list.add(handler);
+    public AbstractHandlersChain(T handler, HandlersChain tail) {
+        this.handler = handler;
+        this.tail = tail;
     }
 
     public void run(MessageContext context) throws Throwable {
-        // we need to clone to save the iterator for the current run
-        AbstractHandlersChain<T> clone = clone();
-        clone.doChain(context);
+        doChain(context);
     }
 
     public void doChain(MessageContext context) throws Throwable {
-        if (!iterator.hasNext()) {
+        if (handler == null) {
             return;
         }
-
-        try {
-            // get the next handler from the chain to handle
-            T handler = iterator.next();
-            // invoke the handler
-            if(logger.isTraceEnabled()) {
-                logger.trace("Invoking handler: {}", handler.getClass().getName()); //$NON-NLS-1$
-            }
-            handle(handler, context);
-        } finally {
-            // set the iterator back one handler on the chain so the same
-            // handler can be re-invoked
-            iterator.previous();
+        // invoke the handler
+        if(logger.isTraceEnabled()) {
+            logger.trace("Invoking handler: {}", handler.getClass().getName()); //$NON-NLS-1$
         }
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    protected AbstractHandlersChain<T> clone() throws CloneNotSupportedException {
-        AbstractHandlersChain<T> clone = (AbstractHandlersChain<T>)super.clone();
-        clone.iterator = list.listIterator();
-        return clone;
+        handle(handler, context);
     }
 
     protected abstract void handle(T handler, MessageContext context) throws Throwable;
 
     @Override
     public String toString() {
-        return String.format("Handlers chain is %1$s", list); //$NON-NLS-1$
+        return String.format("%s:%s", handler, tail); //$NON-NLS-1$
     }
 }

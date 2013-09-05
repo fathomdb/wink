@@ -17,27 +17,10 @@
  *  under the License.
  *  
  *******************************************************************************/
-package org.apache.wink.server.handlers;
+package javax.ws.rs.container;
 
-import java.util.List;
+import java.io.IOException;
 
-public class RequestHandlersChain extends AbstractHandlersChain<RequestHandler> {
-
-    public RequestHandlersChain(RequestHandler handler, HandlersChain tail) {
-        super(handler, tail);
-    }
-
-    @Override
-    protected void handle(RequestHandler handler, MessageContext context) throws Throwable {
-        handler.handleRequest(context, tail);
-    }
-
-    public static RequestHandlersChain build(List<RequestHandler> handlers) {
-        if (handlers.isEmpty()) {
-            return new RequestHandlersChain(null, null);
-        }
-
-        return new RequestHandlersChain(handlers.get(0), build(handlers.subList(1, handlers.size())));
-    }
-
+public interface ContainerRequestFilter {
+    void filter(ContainerRequestContext containerRequestContext) throws IOException;
 }

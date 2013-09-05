@@ -17,27 +17,25 @@
  *  under the License.
  *  
  *******************************************************************************/
-package org.apache.wink.server.handlers;
+package javax.ws.rs.container;
 
-import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-public class RequestHandlersChain extends AbstractHandlersChain<RequestHandler> {
+// TODO: Fill this interface out with the other methods
+// Better yet, pull in a proper jax-rs API
+public interface AsyncResponse {
+    /**
+     * Resume with normal response
+     */
+    public boolean resume(Object response);
 
-    public RequestHandlersChain(RequestHandler handler, HandlersChain tail) {
-        super(handler, tail);
-    }
+    /**
+     * Resume with error response
+     */
+    public boolean resume(Throwable response);
 
-    @Override
-    protected void handle(RequestHandler handler, MessageContext context) throws Throwable {
-        handler.handleRequest(context, tail);
-    }
+    public void setTimeoutHandler(TimeoutHandler timeoutHandler);
 
-    public static RequestHandlersChain build(List<RequestHandler> handlers) {
-        if (handlers.isEmpty()) {
-            return new RequestHandlersChain(null, null);
-        }
-
-        return new RequestHandlersChain(handlers.get(0), build(handlers.subList(1, handlers.size())));
-    }
+    public boolean setTimeout(long duration, TimeUnit timeUnit);
 
 }

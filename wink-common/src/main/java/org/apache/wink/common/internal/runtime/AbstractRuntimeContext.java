@@ -72,4 +72,6 @@ public abstract class AbstractRuntimeContext implements RuntimeContext {
         return getAttribute(Request.class);
     }
 
+    public void close() {
+    }
 }

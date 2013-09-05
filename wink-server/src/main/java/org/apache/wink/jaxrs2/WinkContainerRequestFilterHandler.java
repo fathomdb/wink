@@ -17,27 +17,36 @@
  *  under the License.
  *  
  *******************************************************************************/
-package org.apache.wink.server.handlers;
+package org.apache.wink.jaxrs2;
 
-import java.util.List;
+import java.util.Properties;
 
-public class RequestHandlersChain extends AbstractHandlersChain<RequestHandler> {
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerRequestFilter;
 
-    public RequestHandlersChain(RequestHandler handler, HandlersChain tail) {
-        super(handler, tail);
+import org.apache.wink.server.handlers.HandlersChain;
+import org.apache.wink.server.handlers.MessageContext;
+import org.apache.wink.server.handlers.RequestHandler;
+
+public class WinkContainerRequestFilterHandler implements RequestHandler {
+
+    private final ContainerRequestFilter containerRequestFilter;
+
+    public WinkContainerRequestFilterHandler(ContainerRequestFilter containerRequestFilter) {
+        this.containerRequestFilter = containerRequestFilter;
     }
 
     @Override
-    protected void handle(RequestHandler handler, MessageContext context) throws Throwable {
-        handler.handleRequest(context, tail);
+    public void init(Properties props) {
+
     }
 
-    public static RequestHandlersChain build(List<RequestHandler> handlers) {
-        if (handlers.isEmpty()) {
-            return new RequestHandlersChain(null, null);
-        }
+    @Override
+    public void handleRequest(MessageContext context, HandlersChain chain) throws Throwable {
+        ContainerRequestContext requestContext = new WinkContainerRequestContext(context);
+        containerRequestFilter.filter(requestContext);
 
-        return new RequestHandlersChain(handlers.get(0), build(handlers.subList(1, handlers.size())));
+        chain.doChain(context);
     }
 
 }

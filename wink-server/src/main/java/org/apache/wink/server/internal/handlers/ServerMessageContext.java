@@ -19,12 +19,14 @@
  *******************************************************************************/
 package org.apache.wink.server.internal.handlers;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Properties;
 
+import javax.servlet.AsyncContext;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -32,6 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
+import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -46,6 +49,7 @@ import org.apache.wink.common.internal.contexts.ProvidersImpl;
 import org.apache.wink.common.internal.registry.ProvidersRegistry;
 import org.apache.wink.common.internal.runtime.AbstractRuntimeContext;
 import org.apache.wink.server.handlers.MessageContext;
+import org.apache.wink.server.handlers.ResponseHandlersChain;
 import org.apache.wink.server.internal.DeploymentConfiguration;
 import org.apache.wink.server.internal.MediaTypeMapper;
 import org.apache.wink.server.internal.contexts.HttpHeadersImpl;
@@ -53,16 +57,22 @@ import org.apache.wink.server.internal.contexts.RequestImpl;
 import org.apache.wink.server.internal.contexts.SecurityContextImpl;
 import org.apache.wink.server.internal.contexts.ServerMediaTypeCharsetAdjuster;
 import org.apache.wink.server.internal.contexts.UriInfoImpl;
+import org.apache.wink.server.internal.registry.ResourceInstance;
 import org.apache.wink.server.internal.registry.ResourceRegistry;
 import org.apache.wink.server.internal.utils.LinkBuildersImpl;
 import org.apache.wink.server.utils.LinkBuilders;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class ServerMessageContext extends AbstractRuntimeContext implements MessageContext {
+public class ServerMessageContext extends AbstractRuntimeContext implements MessageContext, Closeable {
+    private static final Logger logger = LoggerFactory.getLogger(ServerMessageContext.class);
 
     private int       responseStatusCode;
     private Object    responseEntity;
     private MediaType responseMediaType;
     private String    httpMethod;
+
+    final ResponseHandlersChain responseHandlersChain;
 
     public ServerMessageContext(HttpServletRequest servletRequest,
                                 HttpServletResponse servletResponse,
@@ -71,6 +81,8 @@ public class ServerMessageContext extends AbstractRuntimeContext implements Mess
         this.httpMethod =
             buildHttpMethod(configuration.getHttpMethodOverrideHeaders(), servletRequest);
         this.responseStatusCode = -1;
+
+        this.responseHandlersChain = configuration.getResponseHandlersChain();
 
         // save stuff on attributes
         setAttribute(HttpServletRequest.class, servletRequest);
@@ -252,5 +264,57 @@ public class ServerMessageContext extends AbstractRuntimeContext implements Mess
             return mediaTypeMapper.mapOutputMediaType(MediaType.valueOf(responseMimeType),
                                                       getHttpHeaders());
         }
+    }
+
+    public AsyncResponse suspend() {
+        HttpServletRequest httpServletRequest = getAttribute(HttpServletRequest.class);
+        HttpServletResponse httpServletResponse = getAttribute(HttpServletResponse.class);
+
+        assert httpServletRequest != null;
+        assert httpServletResponse != null;
+        
+        AsyncContext asyncContext = httpServletRequest.startAsync();
+
+        AsyncResponse ar = new WinkAsyncResponse(this, asyncContext, httpServletRequest, httpServletResponse);
+        setAttribute(AsyncResponse.class, ar);
+        return ar;
+    }
+
+    public void processResponse() throws Throwable {
+        logger
+            .trace("Finished request handlers chain and starting response handlers chain: {}", //$NON-NLS-1$
+                   this);
+        // run the response handler chain
+        responseHandlersChain.run(this);
+
+        logger.trace("Attempting to release resource instance");
+        try {
+            close();
+        } catch (Exception e) {
+            logger.trace("Caught exception when releasing resource object", e);
+            throw e;
+        }        
+    }
+
+    boolean closed = false;
+    
+    public void close() {
+        if (!closed) {
+            closed = true;
+            
+            SearchResult searchResult = this.getAttribute(SearchResult.class);
+            if (searchResult != null) {
+                List<ResourceInstance> resourceInstances = searchResult.getData().getMatchedResources();
+                for (ResourceInstance res : resourceInstances) {
+                    logger.trace("Releasing resource instance");
+                    res.releaseInstance(this);
+                }
+            }
+        }
+    }
+
+    public boolean isAsyncStarted() {
+        AsyncResponse ar = getAttribute(AsyncResponse.class);
+        return ar != null;
     }
 }

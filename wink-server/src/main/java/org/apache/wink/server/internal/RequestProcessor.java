@@ -198,26 +198,17 @@ public class RequestProcessor {
 
     private void handleRequestWithoutFaultBarrier(HttpServletRequest request,
                                                   HttpServletResponse response) throws Throwable {
-        boolean isReleaseResourcesCalled = false;
         try {
             ServerMessageContext msgContext = createMessageContext(request, response);
             RuntimeContextTLS.setRuntimeContext(msgContext);
             logger.trace("Set message context and starting request handlers chain: {}", msgContext); //$NON-NLS-1$
             // run the request handler chain
             configuration.getRequestHandlersChain().run(msgContext);
-            logger
-                .trace("Finished request handlers chain and starting response handlers chain: {}", //$NON-NLS-1$
-                       msgContext);
-            // run the response handler chain
-            configuration.getResponseHandlersChain().run(msgContext);
-
-            logger.trace("Attempting to release resource instance");
-            isReleaseResourcesCalled = true;
-            try {
-                releaseResources(msgContext);
-            } catch (Exception e) {
-                logger.trace("Caught exception when releasing resource object", e);
-                throw e;
+            
+            if (!msgContext.isAsyncStarted()) {
+                msgContext.processResponse();
+            } else {
+                logger.trace("Response is suspended");
             }
         } catch (Throwable t) {
             RuntimeContext originalContext = RuntimeContextTLS.getRuntimeContext();
@@ -232,40 +223,23 @@ public class RequestProcessor {
                 configuration.getErrorHandlersChain().run(msgContext);
 
                 RuntimeContextTLS.setRuntimeContext(originalContext);
-                if (!isReleaseResourcesCalled) {
-                    isReleaseResourcesCalled = true;
-                    try {
-                        releaseResources(originalContext);
-                    } catch (Exception e2) {
-                        logger.trace("Caught exception when releasing resource object", e2);
-                    }
+                try {
+                    originalContext.close();
+                } catch (Exception e2) {
+                    logger.trace("Caught exception when releasing resource object", e2);
                 }
             } catch (Exception e) {
                 RuntimeContextTLS.setRuntimeContext(originalContext);
-                if (!isReleaseResourcesCalled) {
-                    isReleaseResourcesCalled = true;
-                    try {
-                        releaseResources(originalContext);
-                    } catch (Exception e2) {
-                        logger.trace("Caught exception when releasing resource object", e2);
-                    }
+                try {
+                    originalContext.close();
+                } catch (Exception e2) {
+                    logger.trace("Caught exception when releasing resource object", e2);
                 }
                 throw e;
             }
         } finally {
             logger.trace("Finished response handlers chain"); //$NON-NLS-1$
             RuntimeContextTLS.setRuntimeContext(null);
-        }
-    }
-
-    private void releaseResources(RuntimeContext msgContext) throws Exception {
-        SearchResult searchResult = msgContext.getAttribute(SearchResult.class);
-        if (searchResult != null) {
-            List<ResourceInstance> resourceInstances = searchResult.getData().getMatchedResources();
-            for (ResourceInstance res : resourceInstances) {
-                logger.trace("Releasing resource instance");
-                res.releaseInstance(msgContext);
-            }
         }
     }
 

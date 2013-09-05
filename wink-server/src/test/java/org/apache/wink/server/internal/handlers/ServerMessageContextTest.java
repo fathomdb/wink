@@ -48,6 +48,7 @@ public class ServerMessageContextTest extends TestCase {
                 allowing(request).getMethod(); will(returnValue(HttpMethod.GET));
             }
         });
+        config.init();
         ServerMessageContext smc = new ServerMessageContext(request, response, config);
         // object compare to make sure the same object is stored under both
         // WinkConfiguration and DeploymentConfiguration (legacy)

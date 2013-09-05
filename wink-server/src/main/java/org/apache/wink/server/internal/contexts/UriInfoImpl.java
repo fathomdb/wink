@@ -56,6 +56,7 @@ public class UriInfoImpl implements UriInfo {
     private URI                            baseUri;
     private String                         baseUriString;
     private String                         path;
+    private String                         queryString;
 
     private MultivaluedMap<String, String> pathParameters;
     private MultivaluedMap<String, String> decodedPathParameters;
@@ -260,7 +261,7 @@ public class UriInfoImpl implements UriInfo {
         logger.trace("getQueryParameters({}) called", decode); //$NON-NLS-1$
         if (queryParameters == null) {
             queryParameters = new MultivaluedMapImpl<String, String>();
-            String query = messageContext.getAttribute(HttpServletRequest.class).getQueryString();
+            String query = getQueryString();
             logger.trace("getQueryParameters({}) query string is: {}", decode, query); //$NON-NLS-1$
             queryParameters = UriHelper.parseQuery(query);
             logger.trace("getQueryParameters({}) encoded query parameters are: {}", //$NON-NLS-1$
@@ -289,13 +290,20 @@ public class UriInfoImpl implements UriInfo {
     public URI getRequestUri() {
         logger.trace("getRequestUri() called"); //$NON-NLS-1$
         UriBuilder builder = getAbsolutePathBuilder();
-        String query = messageContext.getAttribute(HttpServletRequest.class).getQueryString();
+        String query = getQueryString();
         logger.trace("getRequestUri() query string: {}", query); //$NON-NLS-1$
         builder.replaceQuery(query);
         logger.trace("getRequestUri() build after query replacement: {}", builder); //$NON-NLS-1$
         URI uri = builder.build();
         logger.trace("getRequestUri() returning: {}", uri); //$NON-NLS-1$
         return uri;
+    }
+
+    protected String getQueryString() {
+        if (queryString == null) {
+            queryString = messageContext.getAttribute(HttpServletRequest.class).getQueryString();
+        }
+        return queryString;
     }
 
     public UriBuilder getRequestUriBuilder() {
@@ -435,5 +443,30 @@ public class UriInfoImpl implements UriInfo {
         requestPath = requestPath.substring(index);
         logger.trace("buildRequestPath returning requestPath: {}", requestPath); //$NON-NLS-1$
         return requestPath;
+    }
+
+    public void setRequestUri(URI uri) {
+        // We don't reset baseUri / baseUriString
+        absolutePath = null;
+        path = null;
+        queryString = null;
+        
+        pathParameters = null;
+        decodedPathParameters = null;
+        
+        queryParameters = null;
+        decodedQueryParameters = null;
+        
+        pathSegments = null;
+        decodedPathSegments = null;
+        
+        matchedURIsStrings = null;
+        decodedMatchedURIsStrings = null;
+
+        queryString = uri.getRawQuery();
+        if (queryString == null) {
+            queryString = "";
+        }
+        path = uri.getRawPath();
     }
 }

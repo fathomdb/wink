@@ -19,11 +19,25 @@
  *******************************************************************************/
 package org.apache.wink.server.handlers;
 
+import java.util.List;
+
 public class ResponseHandlersChain extends AbstractHandlersChain<ResponseHandler> {
+
+    public ResponseHandlersChain(ResponseHandler handler, HandlersChain tail) {
+        super(handler, tail);
+    }
 
     @Override
     protected void handle(ResponseHandler handler, MessageContext context) throws Throwable {
-        handler.handleResponse(context, this);
+        handler.handleResponse(context, tail);
+    }
+
+    public static ResponseHandlersChain build(List<ResponseHandler> handlers) {
+        if (handlers.isEmpty()) {
+            return new ResponseHandlersChain(null, null);
+        }
+
+        return new ResponseHandlersChain(handlers.get(0), build(handlers.subList(1, handlers.size())));
     }
 
 }
