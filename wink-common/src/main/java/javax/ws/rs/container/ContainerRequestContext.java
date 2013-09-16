@@ -69,6 +69,15 @@ public interface ContainerRequestContext {
 
     void setMethod(String method);
 
+    /**
+     * Gets the specified HTTP request header
+     * 
+     * @param name
+     *            name of header
+     * @return null if the header was not provided; value of header if header
+     *         was specified once; comma-joined list of values if header
+     *         specified multiple times
+     */
     String getHeaderString(String name);
 
     Date getDate();

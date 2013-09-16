@@ -110,7 +110,22 @@ public class WinkContainerRequestContext implements ContainerRequestContext {
 
     @Override
     public String getHeaderString(String name) {
-        throw new UnsupportedOperationException();
+        List<String> values = context.getHttpHeaders().getRequestHeader(name);
+        if (values == null || values.size() == 0) {
+            return null;
+        }
+        if (values.size() == 1) {
+            return values.get(0);
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < values.size(); i++) {
+            if (i != 0) {
+                sb.append(",");
+            }
+            sb.append(values.get(i));
+        }
+        return sb.toString();
     }
 
     @Override
