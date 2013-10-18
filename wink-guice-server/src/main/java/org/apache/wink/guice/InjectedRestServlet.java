@@ -19,6 +19,9 @@
 
 package org.apache.wink.guice;
 
+import java.io.IOException;
+import java.util.Properties;
+
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
@@ -87,6 +90,15 @@ public class InjectedRestServlet extends RestServlet {
         // return new ServletWinkApplication(getServletContext(),
         // appLocationParameter);
         return applicationProvider.get();
+    }
+
+    @Override
+    protected Properties getProperties() throws IOException {
+        Properties properties = super.getProperties();
+
+        properties.setProperty("wink.rootResource", "none");
+        properties.setProperty("wink.loadApplications", "false");
+        return properties;
     }
 
 }

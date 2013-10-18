@@ -100,7 +100,6 @@ public class WinkContainerRequestContext implements ContainerRequestContext {
     @Override
     public void setMethod(String method) {
         throw new UnsupportedOperationException();
-
     }
 
     @Override

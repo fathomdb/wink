@@ -50,7 +50,7 @@ public class GuiceJaxrsApplication extends WinkApplication {
 
     @Override
     public double getPriority() {
-        return super.getPriority();
+        return 10.0;
     }
 
     @Override
@@ -60,7 +60,9 @@ public class GuiceJaxrsApplication extends WinkApplication {
 
     @Override
     public Set<Class<?>> getClasses() {
-        return classes;
+        Set<Class<?>> ret = new HashSet<Class<?>>();
+        ret.addAll(classes);
+        return ret;
     }
 
     @Override
